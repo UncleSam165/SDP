@@ -4,7 +4,7 @@ Data = ['04';'02';'00';'2E';'00';'60';'08';'CD';'37';'A6';'00';'20';'D6';...
     '01';'3C';'F1';'00';'60';'08';'AD';'3B';'AF';'00';'00';...
     dec2hex(Message);'67';'33';'21';'B6'];
 Data = uint8(bin2dec(reshape(dec2bin(hex2dec(Data)).',[],1)));
-pre = creatxePreamble();
+pre = createPreamble();
 sig = createSignal(18,100);
 PreScrData = prepare4Scrambling(Data,144);
 Scrambler = comm.Scrambler(2,'1 + z^4 + z^7',[1 0 1 1 1 0 1],'ResetInputPort',true);
