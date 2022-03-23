@@ -1,12 +1,13 @@
-commandStr = 'python F:\J2735-python\__init__.py';
+# To run the encoding 
+commandStr = 'python encode.py';
 [status, commandOut] = system(commandStr);
 if status==0 
 Msg = commandOut ;
 end
 
 
-
-commandStr = sprintf('python SAE_decode.py %s' , Msg) ;
+# To run the decoding
+commandStr = sprintf('python decode.py %s' , Msg) ;
 [status, commandOut] = system(commandStr);
 if status==0
 Msg = commandOut ;
