@@ -29,10 +29,60 @@ subplot(2,1,2)
 plot(t, imag(waveform))
 title('Imaginary Part of the OFDM waveform')
 
+%% radar channel
+distances = [400 300 200] ;  % distances in meters
+speeds = [-10 5 25]; % speed in meter/sec
+RCS = [30 15 1]; % Radar cross section of the targets
+c = physconst('lightSpeed');
+fc = 5.9*10^9; % carrier frequency
+df = 125 * 10^3; %frequency spacing
+dt = 0.1 * 10^-6; % sampling interval
+fs = 1/dt; %sampling frequency (20 MHz)
+deltaT = 0.4 *10^-3; % Observation time (means we take measurement every deltaT time)
+NumberofTimeSlots = 64; % number of time frames
+NumberOfSubcarriers = 64;
+Nfftn = 1024;
+Nfftm = 1024;
+
+RadarChannel = Generate_radar_channel(distances,speeds,RCS,fc,df,deltaT,NumberofTimeSlots,NumberOfSubcarriers);
+RadarChannel = normalize(RadarChannel);
+RadarChannel_time = ifft(RadarChannel);
+
+% add the channel to the wavefrom
+waveform_radar = zeros(length(waveform),NumberofTimeSlots);
+for k = 1 : NumberofTimeSlots
+    temp = conv(waveform,RadarChannel_time(:,k));
+    waveform_radar(:,k) = temp(1:end-NumberOfSubcarriers+1);
+end
 %% Receiver
-% [preamble, Data] = extractPreamble()
+chan = zeros(52,NumberofTimeSlots);
+for i = 1: NumberofTimeSlots
+    [preamble, Data] = extractPreamble(waveform_radar(:,i));
+
+    %remove the cyclic prefix from the original and recieved signals
+    longpre1 = round(ofdmdemod(pre(161:256),64,32,32,[1:6 33 64-4:64].')); % original preamble
+
+    longpre1rx = round(ofdmdemod(preamble(161:256),64,32,32,[1:6 33 64-4:64].'),8); % received preamble
+    longpre2rx = round(ofdmdemod(preamble(257:320),64,0,0,[1:6 33 64-4:64].'),8); % received preamble
+    longprerx = (longpre2rx + longpre1rx)./2;
+
+    %do channel estimation here
+    chan(:,i) = longprerx ./longpre1;
+    chan(:,i) = circshift(chan(:,i),52+16);
+    chan(27,i) = (chan(26,i) + chan(28,i))/2;
+
+end
 
 [rate, length] = decodeSignal(sig,0);
 Databits = Demodulation(T, rate, length, 0);
 Databits == reshape(EncodedData,[],1);
-sum(Databits == reshape(EncodedData,[],1))
+sum(Databits == reshape(EncodedData,[],1));
+
+shifted_per = Periodogram(chan,Nfftn,Nfftm,fc,deltaT,df);
+shifted_per = circshift(shifted_per,Nfftn/2,2);
+figure;
+im = imagesc(linspace(((Nfftm/2-1)*c)/(2*fc*deltaT*Nfftm),-c/(4*fc*deltaT),Nfftm) , linspace(0,((Nfftn-1)*c)/(2*df*Nfftn),Nfftn) , shifted_per );
+colorbar;
+xlabel('relative speed (m/s)');
+ylabel('Distance (m)');
+set(gca,'YDir','normal');
