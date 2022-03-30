@@ -140,66 +140,66 @@ sensor = drivingRadarDataGenerator('SensorIndex', 1, ...
     'TargetReportFormat', 'Detections', ...
     'Profiles', profiles);
 
-function [scenario, egoVehicle] = createDrivingScenario
-% createDrivingScenario Returns the drivingScenario defined in the Designer
-
-% Construct a drivingScenario object.
-scenario = drivingScenario;
-
-% Add all road segments
-roadCenters = [-9.9 0.2 0;
-    -6.5 0.8 0;
-    29.7 2.1 0;
-    60.4 0.1 0];
-laneSpecification = lanespec(3, 'Width', 6);
-road(scenario, roadCenters, 'Lanes', laneSpecification, 'Name', 'Road');
-
-% Add the ego vehicle
-egoVehicle = vehicle(scenario, ...
-    'ClassID', 1, ...
-    'Position', [-6.5 0.8 0], ...
-    'Mesh', driving.scenario.carMesh, ...
-    'Name', 'Car');
-waypoints = [-6.5 0.8 0;
-    0.1 1.8 0;
-    6.7 2.5 0;
-    13 2.8 0;
-    17.8 3.5 0;
-    26.1 7.7 0;
-    32.5 8.4 0;
-    40.7 6.9 0;
-    47.7 1.7 0;
-    55.5 0.4 0;
-    59.7 0.1 0];
-speed = [10;20;20;10;5;10;10;10;10;10;10];
-waittime = [0;0;0;0;0;0;0;0;0;0;0];
-trajectory(egoVehicle, waypoints, speed, waittime);
-
-% Add the non-ego actors
-vehicle(scenario, ...
-    'ClassID', 2, ...
-    'Length', 8.2, ...
-    'Width', 2.5, ...
-    'Height', 3.5, ...
-    'Position', [26.1 2.6 0], ...
-    'Mesh', driving.scenario.truckMesh, ...
-    'Name', 'Truck');
-
-bicycle = actor(scenario, ...
-    'ClassID', 3, ...
-    'Length', 1.7, ...
-    'Width', 0.45, ...
-    'Height', 1.7, ...
-    'Position', [47.2 6.8 0], ...
-    'Mesh', driving.scenario.bicycleMesh, ...
-    'Name', 'Bicycle');
-waypoints = [47.2 6.8 0;
-    51.8 6.6 0;
-    55 6.2 0;
-    59.9 5.7 0];
-speed = [2;2;2;2];
-waittime = [0;0;0;0];
-trajectory(bicycle, waypoints, speed, waittime);
-
-% function [periodo] = perform_detection
-
+% function [scenario, egoVehicle] = createDrivingScenario
+% % createDrivingScenario Returns the drivingScenario defined in the Designer
+% 
+% % Construct a drivingScenario object.
+% scenario = drivingScenario;
+% 
+% % Add all road segments
+% roadCenters = [-9.9 0.2 0;
+%     -6.5 0.8 0;
+%     29.7 2.1 0;
+%     60.4 0.1 0];
+% laneSpecification = lanespec(3, 'Width', 6);
+% road(scenario, roadCenters, 'Lanes', laneSpecification, 'Name', 'Road');
+% 
+% % Add the ego vehicle
+% egoVehicle = vehicle(scenario, ...
+%     'ClassID', 1, ...
+%     'Position', [-6.5 0.8 0], ...
+%     'Mesh', driving.scenario.carMesh, ...
+%     'Name', 'Car');
+% waypoints = [-6.5 0.8 0;
+%     0.1 1.8 0;
+%     6.7 2.5 0;
+%     13 2.8 0;
+%     17.8 3.5 0;
+%     26.1 7.7 0;
+%     32.5 8.4 0;
+%     40.7 6.9 0;
+%     47.7 1.7 0;
+%     55.5 0.4 0;
+%     59.7 0.1 0];
+% speed = [10;20;20;10;5;10;10;10;10;10;10];
+% waittime = [0;0;0;0;0;0;0;0;0;0;0];
+% trajectory(egoVehicle, waypoints, speed, waittime);
+% 
+% % Add the non-ego actors
+% vehicle(scenario, ...
+%     'ClassID', 2, ...
+%     'Length', 8.2, ...
+%     'Width', 2.5, ...
+%     'Height', 3.5, ...
+%     'Position', [26.1 2.6 0], ...
+%     'Mesh', driving.scenario.truckMesh, ...
+%     'Name', 'Truck');
+% 
+% bicycle = actor(scenario, ...
+%     'ClassID', 3, ...
+%     'Length', 1.7, ...
+%     'Width', 0.45, ...
+%     'Height', 1.7, ...
+%     'Position', [47.2 6.8 0], ...
+%     'Mesh', driving.scenario.bicycleMesh, ...
+%     'Name', 'Bicycle');
+% waypoints = [47.2 6.8 0;
+%     51.8 6.6 0;
+%     55 6.2 0;
+%     59.9 5.7 0];
+% speed = [2;2;2;2];
+% waittime = [0;0;0;0];
+% trajectory(bicycle, waypoints, speed, waittime);
+% 
+% % function [periodo] = perform_detection
+% 
