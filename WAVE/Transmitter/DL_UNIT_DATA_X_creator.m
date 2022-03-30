@@ -10,9 +10,21 @@ function message = DL_UNIT_DATA_X_creator(parsed_wsm_message)
     % destination address
     message(2) = parsed_wsm_message(11); 
     
-    % data
-    message(3) = parsed_wsm_message(10); % This shall be an octet string in
-    % a format like the following (11 FA BB BA 00) with no specified range
+    %Creating the header to append before payload data
+    %Creating the header version as a one byte with 4-bits reserved
+    reserved_bits_h_version = dec2bin(0,4);
+    h_version = [dec2bin(2,4) reserved_bits_h_version];
+    %Creating the header Timeslot appeneded in the header as a one-byte
+    h_time_slot = dec2bin(str2double(parsed_wsm_message(2));
+    %Creating the header Length received from the application layer 
+    h_length = dec2bin(parsed_wsm_message(9));
+    %Creating the header psid received from the application layer
+    h_psid = dec2bin(str2double(parsed_wsm_message(12)));
+
+    % data 
+
+    payload = dec2bin(str2double(parsed_wsm_message(10)));
+    message(3) = [h_version h_psid h_time_slot h_length payload];
     
     % priority
     if (0 < parsed_wsm_message(7)) && (parsed_wsm_message(7) < 7) 

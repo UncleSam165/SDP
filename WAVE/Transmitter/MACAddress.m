@@ -155,3 +155,5 @@ catch % fallback to system() if java fails like for Octave
     cmd = regexprep(cmd, '.+? .+', '"$0"'); % double quotes if with middle space
     [err, out] = system(sprintf('%s ', cmd{:}, '2>&1')); % Octave need 2>&1
 end
+
+%%  I used this function from MATLAB file exchange her: https://www.mathworks.com/matlabcentral/fileexchange/63737-get-computer-mac-address
