@@ -45,8 +45,8 @@ function MPDU = MACencapsulate(Type, Subtype, MoreFragments, Retry, Struct)
   FrameControl = dec2hex(bin2dec(FrameControl));
 
  %get addresses and shape them into hexa decimals
- Address1 = Struct.SourceAddress;
- Address2 = Struct.DestinationAddress;
+ Address1 = Struct.DestinationAddress;
+ Address2 = Struct.SourceAddress;
  Address3 = 'FFFFFFFFFFFF';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % sequence Control Field
