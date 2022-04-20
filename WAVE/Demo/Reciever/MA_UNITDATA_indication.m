@@ -5,7 +5,7 @@ function LLC_message = MA_UNITDATA_indication(message)
     
     % Source_address
     LLC_message.Source_address = message.Source_address;  
-    if strcmp(message.Destination_address, MACAddress()) || strcmp(message.Destination_address, 'FF:FF:FF:FF:FF:FF')
+    if strcmp(message.Destination_address, MACAddress()) || strcmp(message.Destination_address, 'FF-FF-FF-FF-FF-FF')
       
         LLC_message.Destination_address = message.Destination_address;
     else 
@@ -20,7 +20,7 @@ function LLC_message = MA_UNITDATA_indication(message)
     if (0 < message.User_Priority) && (message.User_Priority < 7) 
         LLC_message.User_Priority = message.User_Priority;
     else
-        LLC_message = nan ; %% out of range
+        LLC_message.User_Priority = nan ; %% out of range
     end
 
     % Service Class 

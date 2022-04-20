@@ -51,7 +51,7 @@ function MPDU = MACencapsulate(Type, Subtype, MoreFragments, Retry, Struct)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % sequence Control Field
 FragmentNumber = dec2hex(randi([0,2^4-1]));
-SequenceNumber = dec2hex(randi([0,2^12-1]));
+SequenceNumber = dec2hex(randi([0,2^12-1]),3);
 SequenceControlField = reshape([FragmentNumber, SequenceNumber],2,[])';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Data = Struct.Data;

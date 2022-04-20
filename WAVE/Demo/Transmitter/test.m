@@ -17,3 +17,4 @@ Wsm_request = struct('Channel_Identifier' ,178 , ...
 'Provider_Service_Identifier', '87' ) ;
 DL_UNIT_DATA_X = DL_UNIT_DATA_X_creator(Wsm_request) ;
 MA_UNIT_DATA_X = MA_UNIT_DATA_X_creator(DL_UNIT_DATA_X) ;
+MPDU = MACencapsulate('Data','Data', true, true, MA_UNIT_DATA_X);

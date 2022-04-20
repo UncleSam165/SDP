@@ -42,25 +42,26 @@ function MPDU = MACencapsulate(Type, Subtype, MoreFragments, Retry, Struct)
  FrameControl = [version, Type, Subtype, toDS, fromDS, MoreFragments,...
      Retry, PowerManagement, MoreData, Protected, order];
  % reshape into hexadecimal
-  FrameControl = dec2hex(bin2dec(FrameControl));
+  FrameControl = dec2hex(bin2dec(FrameControl),4);
 
  %get addresses and shape them into hexa decimals
- Address1 = Struct.DestinationAddress;
- Address2 = Struct.SourceAddress;
+ Address1 = Struct.DestinationAddress(Struct.DestinationAddress ~= ':');
+ Address2 = Struct.SourceAddress(Struct.SourceAddress ~= '-');
  Address3 = 'FFFFFFFFFFFF';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % sequence Control Field
 FragmentNumber = dec2hex(randi([0,2^4-1]));
-SequenceNumber = dec2hex(randi([0,2^12-1]));
-SequenceControlField = reshape([FragmentNumber, SequenceNumber],2,[])';
+SequenceNumber = dec2hex(randi([0,2^12-1]),3);
+SequenceControlField = [FragmentNumber, SequenceNumber];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Data = Struct.Data;
 generator = comm.CRCGenerator('Polynomial',...
     'z^32+ z^26+ z^23+ z^22+ z^16+ z^12+ z^11+ z^10+ z^8+ z^7+ z^5+ z^4 + z^2 + z + 1');
 ID = randi([0 1],[1,16]);
+ID = num2str(ID);
+ID = dec2hex(bin2dec(ID(ID~=' ')),4);
 MPDU = hex2poly([FrameControl, ID, Address1, Address2, Address3, SequenceControlField, Data]);
-MPDU = [zeros(rem(length(MPDU),4),1) MPDU];
-MPDU = generator(MPDU);
+MPDU = [ MPDU zeros(1,rem(length(MPDU),8))];
+MPDU = generator(MPDU');
 MPDU = dec2hex(bin2dec(reshape(dec2bin(MPDU),8,[])'));
-
 end

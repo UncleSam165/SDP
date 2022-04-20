@@ -1,12 +1,37 @@
 clc; clear; close all;
-Message = ['Joy, bright spark of divinity,' newline 'Daughter of Elysium,' newline 'Fire-insired we trea'];
-MPDU = ['04';'02';'00';'2E';'00';'60';'08';'CD';'37';'A6';'00';'20';'D6';...
-    '01';'3C';'F1';'00';'60';'08';'AD';'3B';'AF';'00';'00';...
-    dec2hex(Message);'67';'33';'21';'B6'];
-Data = MPDU;
-Data1 = uint8(bin2dec(reshape(dec2bin(hex2dec(Data)).',[],1)));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SAE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+commandStr = 'python3 SAE/encode.py';
+[status, commandOut] = system(commandStr);
+if status==0 
+Msg = commandOut ;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% WSMP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Wsm_request = struct('Channel_Identifier' ,178 , ...
+'Data_Rate' , 120 ,...
+'Transmit_Power_Level' ,  0 , ...
+'Channel_Load' , '0000' , ...
+'Info_Elements_Indicator', '0000' , ...
+'User_Priority' , 2 , ...
+'Expiry_Time', 200 , ...
+'Length' , length(Msg), ...
+'Data', Msg , ...
+'Peer_MAC_Address', 'FF:FF:FF:FF:FF:FF' , ... 
+'Provider_Service_Identifier', '87' ) ;
+DL_UNIT_DATA_X = DL_UNIT_DATA_X_creator(Wsm_request) ;
+MA_UNIT_DATA_X = MA_UNIT_DATA_X_creator(DL_UNIT_DATA_X) ;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAC LAYER %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MPDU = MACencapsulate('Data','Data', true, true, MA_UNIT_DATA_X);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PHY LAYER %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Data Reshaping
+Data1 = uint8(bin2dec(reshape(dec2bin(hex2dec(MPDU)).',[],1)));
+
+%Creating Preamble and Signal
 pre = createPreamble();
-sig = createSignal(18,100);
+sig = createSignal(18,length(MPDU));
 PreScrData = prepare4Scrambling(Data1,144);
 Scrambler = comm.Scrambler(2,'1 + z^4 + z^7',[1 0 1 1 1 0 1],'ResetInputPort',true);
 ScrData = Scrambler(PreScrData,1);
@@ -74,6 +99,7 @@ for i = 1: NumberofTimeSlots
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%% PHY LAYER %%%%%%%%%%%%%%%%%%%%%%
 [rate, length] = decodeSignal(sig,0);
 Databits = Demodulation(T, rate, length, 0);
 Deinterleved = Deinterleaver(reshape(Databits,192,[]),192);
@@ -92,9 +118,30 @@ Descrambler = comm.Descrambler(2,'1 + z^4 + z^7',[1 0 1 1 1 0 1],'ResetInputPort
 Descrambled = Descrambler(DecodedData,1);
 Descrambled = num2str(Descrambled);
 
-MPSU = dec2hex(bin2dec(reshape(Descrambled,8,[])'),2);
-MPSU = MPSU(3:2+length,:);
+MSDU = dec2hex(bin2dec(reshape(Descrambled,8,[])'),2);
+MSDU = MSDU(3:2+length,:);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%% MAC LAYER  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[SrcAddress, DestAddress, RcvData] = MACDecapsulate(MSDU);
+MA_MESSAGE = MA_UNITDATA_inidication_Create(SrcAddress, DestAddress, RcvData);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%% LLC Layer %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+MA_UNITDATA_indication_msg = MA_UNITDATA_indication(MA_MESSAGE) ;
+%
+DL_UNITDATA_indication_msg = DL_UNITDATA_indication(MA_UNITDATA_indication_msg) ;
+%
+WSMP_Message = WSMWaveShortMessage_indication(DL_UNITDATA_indication_msg) ;
+%
+commandStr = sprintf('python3 SAE/decode.py %s' , WSMP_Message.Data) ; % python or python3    
+[status, commandOut] = system(commandStr);
+if status==0
+Msg2 = commandOut ;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%% WSMP Layer %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 
 shifted_per = Periodogram(chan,Nfftn,Nfftm,fc,deltaT,df);
 shifted_per = circshift(shifted_per,Nfftn/2,2);
