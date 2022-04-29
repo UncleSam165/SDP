@@ -111,10 +111,10 @@ end
 %%
 %%%%%%%%%%%%%%%%%%%%%%%% PHY LAYER %%%%%%%%%%%%%%%%%%%%%%
 [rate, length, ChanEstimate] = decodeSignal(sig,0,ChanEstimate);
+%%
 Databits = Demodulation(T, rate, length, 0, ChanEstimate);
 Deinterleved = Deinterleaver(reshape(Databits,192,[]),192);
 Deinterleved = reshape(Deinterleved,[],1);
-%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%% Viterbi Decoder %%%%%%%%%%%%%%%%%%%%%%%%%
 trelli = poly2trellis(7,[133 171]);

@@ -1,0 +1,7 @@
+function out = Equalize(in, ChanEstimate)
+%EQUALIZE Summary of this function goes here
+%   Detailed explanation goes here
+ChanEstimate = [ChanEstimate(1:5);ChanEstimate(7:19);ChanEstimate(21:33);ChanEstimate(35:46)];
+outputArg2 = inputArg2;
+end
+

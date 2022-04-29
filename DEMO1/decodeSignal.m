@@ -5,8 +5,8 @@ function [rate, length, ChanEstimate] = decodeSignal(SignalWaveform, Offset, Cha
 [Sig, RcvPilots] = ofdmdemod(SignalWaveform, 64, 16, Offset, [1:6 33 60:64].',[12 26 40 54].');
 [ ~, Pilots] = insertPilots([],0);
 RcvPilots = RcvPilots./Pilots;
-ChanEstimate = UpdateChanEstimate(ChanEstimate, RcvPilots, 8);
-Sig = Sig/ChanEstimate;
+ChanEstimate = UpdateChanEstimate(ChanEstimate, RcvPilots, 12);
+Sig = Equalize(Sig,ChanEstimate);
 bits = pskdemod(Sig, 2, pi);
 RateTable = containers.Map({'1101', '1111', '0101', '0111', '1001', '1011', '0001', '0011'},...
     {3, 4.5, 6, 9, 12, 18, 24, 27});

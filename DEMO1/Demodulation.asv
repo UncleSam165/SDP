@@ -1,4 +1,4 @@
-function Databits = Demodulation(waveform, rate, Length, offset, ChanEstimate)
+function Databits = Demodulation(waveform, rate, length, offset, ChanEstimate)
 %DEMODULATION Summary of this function goes here
 %   Detailed explanation goes here
 waveform = reshape(waveform, 80, []);
@@ -32,19 +32,11 @@ switch ModScheme(1)
              'OutputDataType', int8);
 end
 
-[complexSymbols, RcvPilots] = ofdmdemod(waveform,64,16,offset,[1:6 33 60:64].',[12 26 41 54].');
-[r,~,z] = size(complexSymbols);
-ComplexSymbols = zeros(r*z,1);
-for i = 1:z
-    [~, pilots] = insertPilots([],i);
-    pilotEst = RcvPilots(:,1,i)./pilots;
-    ChanEstimate = UpdateChanEstimate(ChanEstimate,pilotEst,12);
-    out = Equalize(complexSymbols(:,1,i),ChanEstimate);
-    ComplexSymbols((i-1)*48+1:i*48) = out;
-end
+[complexSymbols, pilots] = ofdmdemod(waveform,64,16,offset,[1:6 33 60:64].',[12 26 41 54].');
+z = size(complexSymbols,3);
+complexSymbols = reshape(complexSymbols,[],1);
 
-
-Databits = Demapper(ComplexSymbols);
+Databits = Demapper(complexSymbols);
 % Databits = Databits -1;
 % Databits(Databits==-1) = 1;
 %Databits = Databits(1:length*8);
