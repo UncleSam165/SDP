@@ -132,7 +132,7 @@ MA_UNITDATA_indication_msg = MA_UNITDATA_indication(MA_MESSAGE) ;
 DL_UNITDATA_indication_msg = DL_UNITDATA_indication(MA_UNITDATA_indication_msg) ;
 %
 WSMP_Message = WSMWaveShortMessage_indication(DL_UNITDATA_indication_msg) ;
-WSMP_Message.Data(end) = Msg(end);
+WSMP_Message.Data(end) = newline;
 %
 commandStr = sprintf('python3 SAE/decode.py %s' , WSMP_Message.Data) ; % python or python3    
 [status, commandOut] = system(commandStr);
