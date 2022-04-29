@@ -132,11 +132,16 @@ MA_UNITDATA_indication_msg = MA_UNITDATA_indication(MA_MESSAGE) ;
 DL_UNITDATA_indication_msg = DL_UNITDATA_indication(MA_UNITDATA_indication_msg) ;
 %
 WSMP_Message = WSMWaveShortMessage_indication(DL_UNITDATA_indication_msg) ;
+WSMP_Message.Data(end) = Msg(end);
 %
 commandStr = sprintf('python3 SAE/decode.py %s' , WSMP_Message.Data) ; % python or python3    
 [status, commandOut] = system(commandStr);
 if status==0
 Msg2 = commandOut ;
+end
+
+if lower(WSMP_Message.Data) == Msg 
+    disp('Recieved') ;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%% WSMP Layer %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
