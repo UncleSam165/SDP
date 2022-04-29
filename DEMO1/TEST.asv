@@ -86,9 +86,9 @@ end
 LongSymbol = [1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, -1, -1, 1,...
                   1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1,...
                   -1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1].';
-RcvLong1 = ofdmdemod(waveform(161:256),64,32,1,[1:6 33 64-4:64].');
-RcvLong2 = ofdmdemod(waveform(257:320),64,0,0,[1:6 33 64-4:64].');
-ChanEstimate = mean([RcvLong1./LongSymbol,RcvLong2./LongSymbol],2);
+RcvPre = waveform(161:320);
+RcvLong1 = ofdmdemod(RcvPre(2:96),64,32,1,[1:6 33 64-4:64].');
+%RcvLong2 =
 
 %%
 chan = zeros(52,NumberofTimeSlots);
@@ -108,13 +108,12 @@ for i = 1: NumberofTimeSlots
     chan(27,i) = (chan(26,i) + chan(28,i))/2;
 
 end
-%%
+
 %%%%%%%%%%%%%%%%%%%%%%%% PHY LAYER %%%%%%%%%%%%%%%%%%%%%%
-[rate, length, ChanEstimate] = decodeSignal(sig,0,ChanEstimate);
-Databits = Demodulation(T, rate, length, 0, ChanEstimate);
+[rate, length] = decodeSignal(sig,0);
+Databits = Demodulation(T, rate, length, 0);
 Deinterleved = Deinterleaver(reshape(Databits,192,[]),192);
 Deinterleved = reshape(Deinterleved,[],1);
-%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%% Viterbi Decoder %%%%%%%%%%%%%%%%%%%%%%%%%
 trelli = poly2trellis(7,[133 171]);

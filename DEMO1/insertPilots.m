@@ -1,10 +1,14 @@
-function out = insertPilots(Data, n)
+function [out, Pilots] = insertPilots(Data, n)
 p = [1,1,1,1,-1,-1,-1,1,-1,-1,-1,-1,1,1,-1,1,-1,-1,1,1,-1,1,1,-1,1,1,1,...
     1,1,1,-1,1,1,1,-1,1, 1,-1,-1,1, 1,1,-1,1, -1,-1,-1,1, -1,1,-1,-1, 1,...
     -1,-1,1, 1,1,1,1, -1,-1,1,1,-1,-1,1,-1, 1,-1,1,1, -1,-1,-1,1, 1,-1,...
     -1,-1, -1,1,-1,-1, 1,-1,1,1, 1,1,-1,1, -1,1,-1,1,-1,-1,-1,-1, -1,1,...
     -1,1, 1,-1,1,-1, 1,1,1,-1, -1,1,-1,-1, -1,1,1,1, -1,-1,-1,-1, -1,-1,-1];
-Pilots = [1,1,1,-1];
+Pilots = [1,1,1,-1]';
 Pilots = p(mod(n,length(p))+1)*Pilots;
-out = [Data(1:5); Pilots(1); Data(6:18); Pilots(2); Data(19:31); Pilots(3); Data(32:43); Pilots(4); Data(44:end)];
+if(~isempty(Data))
+    out = [Data(1:5); Pilots(1); Data(6:18); Pilots(2); Data(19:31); Pilots(3); Data(32:43); Pilots(4); Data(44:end)];
+else
+    out = [];
+end
 end

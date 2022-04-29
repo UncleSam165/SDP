@@ -1,0 +1,10 @@
+function UpdChanEstimate = UpdateChanEstimate(ChanEstimate, pilots, alpha)
+%UPDATECHANESTIMATE Summary of this function goes here
+%   Detailed explanation goes here
+Hp_mean = mean(pilots);
+pilots = [Hp_mean; pilots; Hp_mean];
+H = interp(pilots,13,3,pi/14);
+
+UpdChanEstimate = 
+end
+

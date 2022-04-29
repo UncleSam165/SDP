@@ -1,12 +1,10 @@
-function [rate, length, ChanEstimate] = decodeSignal(SignalWaveform, Offset, ChanEstimate)
+function [rate, length] = decodeSignal(SignalWaveform, Offset, ChanEstimate)
 %DECODESIGNAL Extract RATE and LENGTH from Signal OFDM symbol of the IEEE 802.11 PPDU
 %   This functon takes Signal OFDM symbol with certain Offset, performs the OFDM demodulation
 %   and returns the RATE and LENGTH specified in the Symbol.
 [Sig, RcvPilots] = ofdmdemod(SignalWaveform, 64, 16, Offset, [1:6 33 60:64].',[12 26 40 54].');
 [ ~, Pilots] = insertPilots([],0);
-RcvPilots = RcvPilots./Pilots;
-ChanEstimate = UpdateChanEstimate(ChanEstimate, RcvPilots, 8);
-Sig = Sig/ChanEstimate;
+ChanEstimate = UpdateChanEstimate(ChanEstimate)
 bits = pskdemod(Sig, 2, pi);
 RateTable = containers.Map({'1101', '1111', '0101', '0111', '1001', '1011', '0001', '0011'},...
     {3, 4.5, 6, 9, 12, 18, 24, 27});
