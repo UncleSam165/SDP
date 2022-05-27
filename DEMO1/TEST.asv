@@ -1,4 +1,6 @@
 clc; clear; close all;
+
+rate = 3;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SAE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 commandStr = 'python3 SAE/encode.py';
 [status, commandOut] = system(commandStr);
@@ -31,13 +33,13 @@ Data1 = uint8(bin2dec(reshape(dec2bin(hex2dec(MPDU)).',[],1)));
 
 %Creating Preamble and Signal
 pre = createPreamble();
-sig = createSignal(18,length(MPDU));
-PreScrData = prepare4Scrambling(Data1,144);
+sig = createSignal(rate,length(MPDU));
+PreScrData = prepare4Scrambling(Data1,rate);
 Scrambler = comm.Scrambler(2,'1 + z^4 + z^7',[1 0 1 1 1 0 1],'ResetInputPort',true);
 ScrData = Scrambler(PreScrData,1);
 EncodedData1 = convenc(ScrData,poly2trellis(7,[133 171]),[1 1 1 0 0 1]);
-EncodedData = Interleaver(reshape(EncodedData1,192,[]),192);
-MappedData = sqrt(1/10).*   conj(qammod(bin2dec(num2str(reshape(EncodedData,4,[]).')),16));
+EncodedData = Interleaver(EncodedData1,rate);
+MappedData = Mapper(E);
 MappedData = reshape(MappedData,48,[]);
 Piloted = zeros(52,size(MappedData,2));
 for i = 1:size(MappedData,2)
@@ -86,9 +88,9 @@ end
 LongSymbol = [1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, -1, -1, 1,...
                   1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1,...
                   -1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1, 1, 1, 1, 1].';
-RcvPre = waveform(161:320);
-RcvLong1 = ofdmdemod(RcvPre(2:96),64,32,1,[1:6 33 64-4:64].');
-%RcvLong2 =
+RcvLong1 = ofdmdemod(waveform(161:256),64,32,1,[1:6 33 64-4:64].');
+RcvLong2 = ofdmdemod(waveform(257:320),64,0,0,[1:6 33 64-4:64].');
+ChanEstimate = mean([RcvLong1./LongSymbol,RcvLong2./LongSymbol],2);
 
 %%
 chan = zeros(52,NumberofTimeSlots);
@@ -108,10 +110,11 @@ for i = 1: NumberofTimeSlots
     chan(27,i) = (chan(26,i) + chan(28,i))/2;
 
 end
-
+%%
 %%%%%%%%%%%%%%%%%%%%%%%% PHY LAYER %%%%%%%%%%%%%%%%%%%%%%
-[rate, length] = decodeSignal(sig,0);
-Databits = Demodulation(T, rate, length, 0);
+[rate, length, ChanEstimate] = decodeSignal(sig,0,ChanEstimate);
+%%
+Databits = Demodulation(T, rate, length, 0, ChanEstimate);
 Deinterleved = Deinterleaver(reshape(Databits,192,[]),192);
 Deinterleved = reshape(Deinterleved,[],1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,4 +1,8 @@
-function out = Interleaver(data ,N_CBPS)
+function out = Interleaver(data ,rate)
+RateTable = containers.Map({3, 4.5, 6, 9, 12, 18, 24, 27}, ...
+    {48, 48, 96, 96, 192, 192, 288, 288});
+N_CBPS = RateTable(rate);
+data = reshape(data,N_CBPS,[]);
 N_BPSC = N_CBPS/48;
 [~,c] = size(data);
 s = max([N_BPSC/2 1]);

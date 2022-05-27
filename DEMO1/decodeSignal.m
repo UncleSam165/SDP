@@ -10,7 +10,7 @@ Sig = Equalize(Sig,ChanEstimate);
 bits = pskdemod(Sig, 2, pi);
 RateTable = containers.Map({'1101', '1111', '0101', '0111', '1001', '1011', '0001', '0011'},...
     {3, 4.5, 6, 9, 12, 18, 24, 27});
-bits = Deinterleaver(bits, 48);
+bits = Deinterleaver(bits, 3);
 bits = vitdec(bits, poly2trellis(7,[133 171]),1,'trunc', 'hard');
 rate = "";
 for i = bits(1:4)'

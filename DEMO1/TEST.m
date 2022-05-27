@@ -1,4 +1,6 @@
 clc; clear; close all;
+
+rate = 27;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SAE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 commandStr = 'python3 SAE/encode.py';
 [status, commandOut] = system(commandStr);
@@ -31,13 +33,13 @@ Data1 = uint8(bin2dec(reshape(dec2bin(hex2dec(MPDU)).',[],1)));
 
 %Creating Preamble and Signal
 pre = createPreamble();
-sig = createSignal(18,length(MPDU));
-PreScrData = prepare4Scrambling(Data1,144);
+sig = createSignal(rate,length(MPDU));
+PreScrData = prepare4Scrambling(Data1,rate);
 Scrambler = comm.Scrambler(2,'1 + z^4 + z^7',[1 0 1 1 1 0 1],'ResetInputPort',true);
 ScrData = Scrambler(PreScrData,1);
-EncodedData1 = convenc(ScrData,poly2trellis(7,[133 171]),[1 1 1 0 0 1]);
-EncodedData = Interleaver(reshape(EncodedData1,192,[]),192);
-MappedData = sqrt(1/10).*   conj(qammod(bin2dec(num2str(reshape(EncodedData,4,[]).')),16));
+EncodedData1 = Encoder(ScrData, rate);
+EncodedData = Interleaver(EncodedData1,rate);
+MappedData = Mapper(EncodedData,rate);
 MappedData = reshape(MappedData,48,[]);
 Piloted = zeros(52,size(MappedData,2));
 for i = 1:size(MappedData,2)
@@ -113,24 +115,20 @@ end
 [rate, length, ChanEstimate] = decodeSignal(sig,0,ChanEstimate);
 %%
 Databits = Demodulation(T, rate, length, 0, ChanEstimate);
-Deinterleved = Deinterleaver(reshape(Databits,192,[]),192);
+Deinterleved = Deinterleaver(Databits,rate);
 Deinterleved = reshape(Deinterleved,[],1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%% Viterbi Decoder %%%%%%%%%%%%%%%%%%%%%%%%%
-trelli = poly2trellis(7,[133 171]);
-ConstraintLength = log2(trelli.numStates) + 1;
-coderate = 3/4;
-tbdepth = 10*(ConstraintLength - 1);
-DecodedData = vitdec(Deinterleved, trelli, tbdepth, 'trunc', 'hard',[1 1 1 0 0 1]);
+DecodedData = Decoder(Deinterleved,rate);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%% Descrambler %%%%%%%%%%%%%%%%%%%%%%%%%%%
 Descrambler = comm.Descrambler(2,'1 + z^4 + z^7',[1 0 1 1 1 0 1],'ResetInputPort',true);
 Descrambled = Descrambler(DecodedData,1);
 Descrambled = num2str(Descrambled);
+Descrambled = Descrambled(17:16+length*8);
 
 MSDU = dec2hex(bin2dec(reshape(Descrambled,8,[])'),2);
-MSDU = MSDU(3:2+length,:);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%% MAC LAYER  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [SrcAddress, DestAddress, RcvData] = MACDecapsulate(MSDU);
@@ -147,7 +145,7 @@ WSMP_Message = WSMWaveShortMessage_indication(DL_UNITDATA_indication_msg) ;
 commandStr = sprintf('python3 SAE/decode.py %s' , WSMP_Message.Data) ; % python or python3    
 [status, commandOut] = system(commandStr);
 if status==0
-Msg2 = commandOut ;
+Msg2 = commandOut;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%% WSMP Layer %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
