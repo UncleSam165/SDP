@@ -31,17 +31,18 @@ plot(t, imag(waveform))
 title('Imaginary Part of the OFDM waveform')
 
 %% radar channel
-distances = [400 300 200] ;  % distances in meters
+distances = [40 30 20] ;  % distances in meters
 speeds = [-10 5 25]; % speed in meter/sec
 RCS = [30 15 1]; % Radar cross section of the targets
 c = physconst('lightSpeed');
-fc = 5.9*10^9; % carrier frequency
+fc = 1.745*10^9; % carrier frequency
 df = 125 * 10^3; %frequency spacing
 dt = 0.1 * 10^-6; % sampling interval
 fs = 1/dt; %sampling frequency (20 MHz)
 deltaT = 0.4 *10^-3; % Observation time (means we take measurement every deltaT time)
 NumberofTimeSlots = 64; % number of time frames
 NumberOfSubcarriers = 64;
+NumberOfTargets = 3;
 Nfftn = 1024;
 Nfftm = 1024;
 
@@ -69,9 +70,8 @@ for i = 1: NumberofTimeSlots
 
     %do channel estimation here
     chan(:,i) = longprerx ./longpre1;
-    chan(:,i) = circshift(chan(:,i),52+16);
-    chan(27,i) = (chan(26,i) + chan(28,i))/2;
-
+    chan(:,i) = circshift(chan(:,i),26);
+    est_chan = [chan(1:26,:) ;(chan(26,1)+chan(27,:))/2; chan(27:end,:)];
 end
 
 [rate, length] = decodeSignal(sig,0);
@@ -95,11 +95,21 @@ Descrambled = num2str(Descrambled);
 MPSU = dec2hex(bin2dec(reshape(Descrambled,8,[])'),2);
 MPSU = MPSU(3:2+length,:);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Periodogram detection (Radar) assume known number of targets
+han_window = repmat(hanning(53),1,53);
+est_chan = est_chan(:,1:53).*han_window';
+[estimatedDistances_p , estimatedVelocities_p] = Periodogram_est(RadarChannel(7:7+52,1:53),Nfftn,Nfftm,fc,deltaT,df,NumberOfTargets);
+% periodogram target extraction using the max number of targets is not
+% working because of the side loops of the signal due to rectangular
+% windowing
 
-shifted_per = Periodogram(chan,Nfftn,Nfftm,fc,deltaT,df);
+%ESPIRT detection (Radar)
+[estimatedDistances_E,estimatedVelocities_E] = ESPIRT(RadarChannel(7:7+52,1:53),53, 53,NumberOfTargets,df,c);
+
+shifted_per = Periodogram(RadarChannel(7:7+52,:),Nfftn,Nfftm,fc,deltaT,df);
 shifted_per = circshift(shifted_per,Nfftn/2,2);
 figure;
-im = imagesc(linspace(((Nfftm/2-1)*c)/(2*fc*deltaT*Nfftm),-c/(4*fc*deltaT),Nfftm) , linspace(0,((Nfftn-1)*c)/(2*df*Nfftn),Nfftn) , shifted_per );
+im = imagesc(linspace(((Nfftm/2-1)*c)/(2*fc*deltaT*Nfftm),-c/(4*fc*deltaT),Nfftm) , linspace(0,((149)*c)/(2*df*Nfftn),Nfftn) , shifted_per(1:150,:) );
 colorbar;
 xlabel('relative speed (m/s)');
 ylabel('Distance (m)');
