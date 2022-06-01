@@ -48,15 +48,42 @@ end
 T = ofdmmod(Piloted,64,16,[1:6 33 60:64].');
 
 waveform = [pre;sig;T];
+%%
+%%%%%%%%%%%%%%%%
+%PowerCalculations
+energy = waveform'*waveform;
+power = 10*log10(energy/length(waveform));
+gain = 10^((-10-power)/10);
+waveformG = sqrt(gain)*waveform;
+energyG = waveformG'*waveformG;
+powerG = 10*log10(energyG/length(waveformG));
+
+
+%%
+
 figure
 t = linspace(0,floor(length(waveform)/80)*8e-6,length(waveform));
 subplot(2,1,1)
 plot(t, real(waveform))
+hold on
+plot(t, real(gain*waveform))
+hold off
 title('Real Part of the OFDM waveform')
 subplot(2,1,2)
 plot(t, imag(waveform))
+hold on
+plot(t, imag(gain*waveform))
+hold off
 title('Imaginary Part of the OFDM waveform')
 
+
+
+figure
+title('Freq-Domain Representation of OFDM frame')
+fs = 10e6;
+PSD = fftshift(fft(sig,256));
+f = linspace(-fs/2, fs/2, length(PSD));
+semilogy(f,abs(PSD));
 %% radar channel
 distances = [400 300 200] ;  % distances in meters
 speeds = [-10 5 25]; % speed in meter/sec
