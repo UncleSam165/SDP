@@ -17,6 +17,6 @@ function WSMP_Message = DL_UNITDATA_indication(message)
     if (0 < message.User_Priority) && (message.User_Priority < 7) 
         WSMP_Message.User_Priority = message.User_Priority;
     else
-        WSMP_Message = nan ; %% out of range
+        WSMP_Message.User_Priority = nan ; %% out of range
     end
 end
