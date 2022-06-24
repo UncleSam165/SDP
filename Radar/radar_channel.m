@@ -58,3 +58,5 @@ colorbar
 xlabel('relative speed (m/s)');
 ylabel('Distance (m)');
 set(gca,'YDir','normal') 
+%% ESPRIT
+[estimatedDistances, estimatedVelocities] = ESPIRT(H,NumberOfSubcarriers,NumberofTimeSlots,NumberOfTargets,df,c);

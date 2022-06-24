@@ -29,7 +29,8 @@ title('Real Part of the OFDM waveform')
 subplot(2,1,2)
 plot(t, imag(waveform))
 title('Imaginary Part of the OFDM waveform')
-
+csvwrite("test_matlab_real.csv", real(waveform));
+csvwrite("test_matlab_imag.csv" , imag(waveform));
 %% radar channel
 distances = [40 30 20] ;  % distances in meters
 speeds = [-10 5 25]; % speed in meter/sec
@@ -94,6 +95,8 @@ Descrambled = num2str(Descrambled);
 
 MPSU = dec2hex(bin2dec(reshape(Descrambled,8,[])'),2);
 MPSU = MPSU(3:2+length,:);
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Periodogram detection (Radar) assume known number of targets
 han_window = repmat(hanning(53),1,53);
@@ -114,3 +117,16 @@ colorbar;
 xlabel('relative speed (m/s)');
 ylabel('Distance (m)');
 set(gca,'YDir','normal');
+
+%% read USRP data 
+Data_real = csvread("D:\radar project\Graduation project\labview implementation\Continuous Tx-Rx/test_matlab_real_out.csv");
+Data_imag = csvread("D:\radar project\Graduation project\labview implementation\Continuous Tx-Rx/test_matlab_imag_out.csv");
+wavrform_RX = Data_real + 1i*Data_imag;
+for k = 1: 195 %this is the size of the captured frames (edit later)
+    
+end
+% USRP_data = USRP_data(:,161:161+159);
+
+% channel = USRP_data(1,:)./transpose(pre(end-159:end));
+% extractedata = USRP_data(:,33:);
+% extractedata_1 = USRP_data(:,end-63:end);
